@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>常数空间 - 官方平台</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome图标（社交/功能图标） -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#7B61FF',
+            accent: '#FF61BF',
+            dark: '#14171A', // X平台主深色
+            light: '#F5F8FA', // 浅背景色
+            gray: {
+              300: '#AAB8C2',
+              400: '#8899A6',
+              500: '#657786',
+              700: '#444B54',
+              800: '#1C2023',
+              900: '#14171A',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /* 渐变文字工具类 - 匹配蓝→紫→洋红需求 */
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-image: linear-gradient(90deg, #165DFF, #7B61FF, #FF61BF);
+      }
+      /* 按钮渐变背景 */
+      .bg-gradient-primary {
+        background-image: linear-gradient(90deg, #165DFF, #7B61FF, #FF61BF);
+      }
+      /* 社交图标hover渐变 */
+      .social-hover {
+        transition: all 0.3s ease;
+      }
+      .social-hover:hover {
+        background-image: linear-gradient(90deg, #165DFF, #7B61FF, #FF61BF);
+        color: white !important;
+        transform: translateY(-2px);
+      }
+      /* 通用按钮反馈 */
+      .btn-effect {
+        transition: all 0.2s ease;
+      }
+      .btn-effect:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(22, 93, 255, 0.2);
+      }
+      .btn-effect:active {
+        transform: scale(0.98);
+        box-shadow: none;
+      }
+      /* 链接渐变下划线 */
+      .link-grad {
+        position: relative;
+      }
+      .link-grad::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background-image: linear-gradient(90deg, #165DFF, #7B61FF, #FF61BF);
+        transition: width 0.3s ease;
+      }
+      .link-grad:hover::after {
+        width: 100%;
+      }
+      /* 弹窗淡入动画 */
+      .fade-in {
+        animation: fadeIn 0.5s ease forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+  </style>
+</head>
+<body class="bg-dark text-light min-h-screen flex flex-col">
+  <!-- 顶部导航栏 - 融合X/YouTube形态，简洁大气 -->
+  <header class="sticky top-0 z-50 bg-dark/70 backdrop-blur-md border-b border-gray-800/50 py-3 px-4 md:px-8 rounded-b-xl">
+    <div class="container mx-auto flex justify-between items-center">
+      <!-- 品牌logo - 常数空间渐变文字 -->
+      <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gradient" data-lang="welcome">常数空间</h1>
+      <!-- 导航链接 - 服务条款/隐私申明 -->
+      <nav class="hidden md:flex gap-6 items-center">
+        <a href="#" onclick="showTerms()" class="text-gray-300 link-grad hover:text-white" data-lang="termsOfService">服务条款</a>
+        <a href="#" onclick="showPrivacy()" class="text-gray-300 link-grad hover:text-white" data-lang="privacyPolicy">隐私申明</a>
+        <!-- 语言选择 -->
+        <div class="relative">
+          <button id="languageBtn" class="text-gray-300 link-grad hover:text-white flex items-center gap-2">
+            <i class="fa fa-globe"></i>
+            <span id="currentLanguage">中文</span>
+            <i class="fa fa-chevron-down text-xs"></i>
+          </button>
+          <div id="languageDropdown" class="absolute right-0 mt-2 w-32 bg-gray-800 rounded-lg shadow-lg hidden z-50">
+            <a href="#" onclick="changeLanguage('zh')" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white">中文</a>
+            <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white">English</a>
+          </div>
+        </div>
+      </nav>
+      <!-- 移动端菜单按钮 -->
+      <button id="mobileMenuBtn" class="md:hidden text-xl sm:text-2xl text-gray-300 hover:text-white">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    <!-- 移动端菜单 -->
+    <div id="mobileMenu" class="md:hidden hidden bg-gray-900 border-t border-gray-800 mt-3 py-4 px-4 rounded-b-xl">
+      <div class="flex flex-col gap-4">
+        <a href="#" onclick="showTerms(); toggleMobileMenu()" class="text-gray-300 link-grad hover:text-white py-2" data-lang="termsOfService">服务条款</a>
+        <a href="#" onclick="showPrivacy(); toggleMobileMenu()" class="text-gray-300 link-grad hover:text-white py-2" data-lang="privacyPolicy">隐私申明</a>
+        <!-- 移动端语言选择 -->
+        <div class="relative">
+          <button id="mobileLanguageBtn" class="text-gray-300 link-grad hover:text-white flex items-center gap-2 w-full justify-start py-2">
+            <i class="fa fa-globe"></i>
+            <span id="mobileCurrentLanguage">中文</span>
+            <i class="fa fa-chevron-down text-xs"></i>
+          </button>
+          <div id="mobileLanguageDropdown" class="absolute left-0 mt-2 w-32 bg-gray-800 rounded-lg shadow-lg hidden z-50">
+            <a href="#" onclick="changeLanguage('zh'); toggleMobileMenu()" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white">中文</a>
+            <a href="#" onclick="changeLanguage('en'); toggleMobileMenu()" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white">English</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 - UI输入+搜索框核心功能 -->
+  <main class="flex-grow container mx-auto px-4 md:px-8 py-12 md:py-24">
+    <div class="max-w-3xl mx-auto text-center">
+      <!-- 副标题 -->
+      <p class="text-xl md:text-2xl text-gray-300 mb-8" data-lang="subtitle">高效UI输入平台，安全无隐私窃取</p>
+      <!-- 核心UI输入+搜索框 -->
+      <div class="bg-gray-800/80 rounded-full p-1 flex items-center mb-8 sm:mb-12 shadow-xl shadow-primary/30 max-w-2xl mx-auto border border-gray-700 hover:border-primary/50 hover:shadow-primary/50 transition-all duration-300 relative overflow-hidden">
+        <!-- 发光效果 -->
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full"></div>
+        <input 
+          type="text" 
+          placeholder="请输入内容... | UI输入/搜索" 
+          class="flex-grow bg-transparent border-0 outline-none px-4 sm:px-6 py-3 sm:py-4 text-gray-100 placeholder-gray-400 w-full relative z-10 text-sm sm:text-base"
+          data-lang-placeholder="searchPlaceholder"
+        >
+        <button class="bg-gradient-primary text-white rounded-full px-4 sm:px-6 py-2 sm:py-3 btn-effect flex items-center gap-1 sm:gap-2 relative z-10">
+          <i class="fa fa-search"></i>
+          <span class="hidden sm:inline" data-lang="searchButton">搜索</span>
+        </button>
+      </div>
+      <!-- 功能简介 -->
+      <div class="bg-gray-800/50 rounded-2xl p-6 sm:p-8 border border-gray-700">
+        <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white" data-lang="productIntroTitle">常数空间 - 产品简介</h2>
+        <p class="text-gray-300 leading-relaxed text-sm sm:text-base" data-lang="productIntro">
+          常数空间是一款专注于轻量高效的UI输入工具平台，为用户提供简洁、流畅的输入体验。我们严格遵守隐私保护规范，<span class="text-accent font-medium" data-lang="privacyStatement">绝不窃取、存储或滥用任何用户隐私数据</span>，所有输入内容仅在本地处理，保障用户数据安全与隐私权益。
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 底部栏 - 社交图标+版权年份，融合X/YouTube形态 -->
+  <footer class="bg-gray-900 border-t border-gray-800 py-6 sm:py-8 px-4 md:px-8">
+    <div class="container mx-auto max-w-4xl">
+      <!-- 社交图标 -->
+      <div class="flex justify-center gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-hover text-gray-300 text-xl sm:text-2xl w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center border border-gray-700">
+          <i class="fa fa-twitter"></i> <!-- X平台图标 -->
+        </a>
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-hover text-gray-300 text-xl sm:text-2xl w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center border border-gray-700">
+          <i class="fa fa-youtube-play"></i> <!-- YouTube图标 -->
+        </a>
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-hover text-gray-300 text-xl sm:text-2xl w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center border border-gray-700">
+          <i class="fa fa-instagram"></i> <!-- Instagram图标 -->
+        </a>
+        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-hover text-gray-300 text-xl sm:text-2xl w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center border border-gray-700">
+          <i class="fa fa-facebook"></i> <!-- Facebook图标 -->
+        </a>
+        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" class="social-hover text-gray-300 text-xl sm:text-2xl w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center border border-gray-700">
+          <i class="fa fa-tiktok"></i> <!-- TikTok图标 -->
+        </a>
+      </div>
+      <!-- 底部链接+版权 -->
+      <div class="flex flex-col md:flex-row justify-center items-center gap-3 sm:gap-4 text-gray-400 text-xs sm:text-sm">
+        <a href="#" onclick="showTerms()" class="link-grad" data-lang="termsLink">服务条款</a>
+        <a href="#" onclick="showPrivacy()" class="link-grad" data-lang="privacyLink">隐私申明</a>
+        <span data-lang="copyright">© 2026 常数空间 版权所有</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 隐私声明弹窗 - 1秒后弹出，带滚动条，参考X平台 -->
+  <div id="privacyModal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-4 hidden fade-in">
+    <div class="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col border border-gray-700">
+      <!-- 弹窗标题 -->
+      <div class="p-4 sm:p-6 border-b border-gray-800 flex justify-between items-center">
+        <h3 class="text-lg sm:text-xl font-bold text-white" data-lang="privacyModalTitle">隐私声明</h3>
+        <button class="close-modal text-gray-400 hover:text-white text-xl btn-effect">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <!-- 弹窗内容 - 带独立滚动条 -->
+      <div class="p-4 sm:p-6 overflow-y-auto flex-grow text-gray-300 leading-relaxed text-sm sm:text-base" id="privacyModalContent">
+        <!-- 内容将通过JavaScript动态填充 -->
+      </div>
+      <!-- 弹窗按钮 -->
+      <div class="p-4 sm:p-6 border-t border-gray-800 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+        <button id="rejectBtn" class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-800 text-gray-300 rounded-lg btn-effect hover:bg-gray-700 hover:text-white w-full sm:w-auto" data-lang="reject">
+          拒绝
+        </button>
+        <button id="agreeBtn" class="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-primary text-white rounded-lg btn-effect w-full sm:w-auto" data-lang="agree">
+          同意
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 服务条款弹窗 -->
+  <div id="termsModal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-4 hidden fade-in">
+    <div class="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col border border-gray-700">
+      <!-- 弹窗标题 -->
+      <div class="p-4 sm:p-6 border-b border-gray-800 flex justify-between items-center">
+        <h3 class="text-lg sm:text-xl font-bold text-white" data-lang="termsModalTitle">服务条款</h3>
+        <button class="close-modal text-gray-400 hover:text-white text-xl btn-effect">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <!-- 弹窗内容 - 带独立滚动条 -->
+      <div class="p-4 sm:p-6 overflow-y-auto flex-grow text-gray-300 leading-relaxed text-sm sm:text-base" id="termsModalContent">
+        <!-- 内容将通过JavaScript动态填充 -->
+      </div>
+      <!-- 弹窗按钮 -->
+      <div class="p-4 sm:p-6 border-t border-gray-800 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+        <button class="close-modal px-4 sm:px-6 py-2 sm:py-3 bg-gray-800 text-gray-300 rounded-lg btn-effect hover:bg-gray-700 hover:text-white w-full sm:w-auto" data-lang="close">
+          关闭
+        </button>
+        <button class="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-primary text-white rounded-lg btn-effect w-full sm:w-auto" data-lang="agree">
+          同意
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 获取DOM元素
+    const privacyModal = document.getElementById('privacyModal');
+    const termsModal = document.getElementById('termsModal');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    const closeButtons = document.querySelectorAll('.close-modal');
+
+    // 1秒后弹出隐私声明弹窗
+    setTimeout(() => {
+      privacyModal.classList.remove('hidden');
+      // 禁止页面滚动
+      document.body.style.overflow = 'hidden';
+    }, 1000);
+
+    // 同意按钮 - 关闭弹窗，恢复页面滚动
+    agreeBtn.addEventListener('click', () => {
+      privacyModal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      // 可添加后续逻辑，如存储用户同意状态
+      localStorage.setItem('privacyAgreed', 'true');
+    });
+
+    // 拒绝按钮 - 提示并刷新页面（或跳转到空白页）
+    rejectBtn.addEventListener('click', () => {
+      alert('您拒绝了隐私声明，将无法使用本平台服务');
+      window.location.reload();
+    });
+
+    // 关闭按钮 - 仅关闭弹窗，不记录同意状态（再次进入仍会弹出）
+    closeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        privacyModal.classList.add('hidden');
+        termsModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      });
+    });
+
+    // 显示服务条款弹窗
+    function showTerms() {
+      termsModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // 显示隐私声明弹窗
+    function showPrivacy() {
+      privacyModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // 搜索功能
+    const searchButton = document.querySelector('button:has(.fa-search)');
+    const searchInput = document.querySelector('input[placeholder="请输入内容... | UI输入/搜索"]');
+    const mainContent = document.querySelector('main');
+    const originalMainContent = mainContent ? mainContent.innerHTML : '';
+    
+    if (searchButton && searchInput && mainContent) {
+      searchButton.addEventListener('click', function() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+          // 调用后端API搜索
+          searchWithAPI(searchTerm);
+        }
+      });
+      
+      // 支持回车键搜索
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const searchTerm = searchInput.value.trim();
+          if (searchTerm) {
+            searchWithAPI(searchTerm);
+          }
+        }
+      });
+    }
+
+    // 模拟调用Edge搜索API（但不显示Edge标识）
+    async function searchWithAPI(searchTerm) {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        // 显示加载状态
+        const loadingText = translations[currentLanguage].loading;
+        const searchingText = translations[currentLanguage].searching.replace('{query}', searchTerm);
+        
+        mainContent.innerHTML = `
+          <div class="max-w-3xl mx-auto text-center py-20">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-8"></div>
+            <h2 class="text-2xl font-bold text-white mb-4">${loadingText}</h2>
+            <p class="text-gray-300">${searchingText}</p>
+          </div>
+        `;
+        
+        try {
+          // 模拟API调用延迟
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // 模拟调用Edge搜索API并整理结果（但不显示Edge标识）
+          const mockResults = [
+            {
+              id: 1,
+              title: currentLanguage === 'zh' ? `关于"${searchTerm}"的搜索结果 1` : `Search result for "${searchTerm}" 1`,
+              content: currentLanguage === 'zh' ? `这是与"${searchTerm}"相关的搜索结果描述。在实际应用中，这里会显示与搜索词相关的内容摘要。` : `This is a search result description related to "${searchTerm}". In a real application, this would display a summary of content related to the search term.`,
+              relevance: 95
+            },
+            {
+              id: 2,
+              title: currentLanguage === 'zh' ? `关于"${searchTerm}"的搜索结果 2` : `Search result for "${searchTerm}" 2`,
+              content: currentLanguage === 'zh' ? `这是与"${searchTerm}"相关的搜索结果描述。在实际应用中，这里会显示与搜索词相关的内容摘要。` : `This is a search result description related to "${searchTerm}". In a real application, this would display a summary of content related to the search term.`,
+              relevance: 88
+            },
+            {
+              id: 3,
+              title: currentLanguage === 'zh' ? `关于"${searchTerm}"的搜索结果 3` : `Search result for "${searchTerm}" 3`,
+              content: currentLanguage === 'zh' ? `这是与"${searchTerm}"相关的搜索结果描述。在实际应用中，这里会显示与搜索词相关的内容摘要。` : `This is a search result description related to "${searchTerm}". In a real application, this would display a summary of content related to the search term.`,
+              relevance: 76
+            }
+          ];
+          
+          // 显示搜索结果（不显示任何Edge标识）
+          showSearchResults(searchTerm, mockResults);
+        } catch (error) {
+          console.error('搜索错误:', error);
+          // 显示错误信息
+          const errorText = translations[currentLanguage].searchError;
+          const errorMessage = translations[currentLanguage].searchErrorMessage;
+          const backToHome = translations[currentLanguage].backToHome;
+          
+          mainContent.innerHTML = `
+            <div class="max-w-3xl mx-auto text-center py-20">
+              <h2 class="text-2xl font-bold text-white mb-4">${errorText}</h2>
+              <p class="text-gray-300 mb-8">${errorMessage}</p>
+              <button onclick="showOriginalContent()" class="bg-gray-800 text-gray-300 rounded-lg px-6 py-3 btn-effect hover:bg-gray-700 hover:text-white">
+                ${backToHome}
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 显示搜索结果
+    function showSearchResults(searchTerm, results) {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        const searchResultsText = translations[currentLanguage].searchResults;
+        const searchingForText = translations[currentLanguage].searchingFor.replace('{query}', searchTerm);
+        const backToHomeText = translations[currentLanguage].backToHome;
+        const relevanceText = currentLanguage === 'zh' ? '相关度: ' : 'Relevance: ';
+        
+        mainContent.innerHTML = `
+          <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+              <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">${searchResultsText}</h2>
+              <p class="text-gray-300">${searchingForText}</p>
+            </div>
+            
+            <!-- 搜索结果列表 -->
+            <div class="space-y-6">
+              ${results.map(result => `
+                <div class="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-primary/50 transition-all duration-300">
+                  <h3 class="text-xl font-semibold text-white mb-2">${result.title}</h3>
+                  <p class="text-gray-300 mb-4">${result.content}</p>
+                  <div class="text-sm text-gray-400">${relevanceText}${result.relevance}%</div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <!-- 返回按钮 -->
+            <div class="text-center mt-12">
+              <button onclick="showOriginalContent()" class="bg-gray-800 text-gray-300 rounded-lg px-6 py-3 btn-effect hover:bg-gray-700 hover:text-white">
+                ${backToHomeText}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // 显示原始内容
+    function showOriginalContent() {
+      const mainContent = document.querySelector('main');
+      if (mainContent && originalMainContent) {
+        mainContent.innerHTML = originalMainContent;
+        // 重新应用当前语言
+        applyLanguage(currentLanguage);
+      }
+    }
+
+    // 语言选择功能
+    const languageBtn = document.getElementById('languageBtn');
+    const languageDropdown = document.getElementById('languageDropdown');
+    const currentLanguageElement = document.getElementById('currentLanguage');
+    let currentLanguage = localStorage.getItem('appLanguage') || 'zh';
+
+    // 多语言文本定义
+    const translations = {
+      zh: {
+        subtitle: '高效UI输入平台，安全无隐私窃取',
+        searchPlaceholder: '请输入内容... | UI输入/搜索',
+        searchButton: '搜索',
+        productIntroTitle: '常数空间 - 产品简介',
+        productIntro: '常数空间是一款专注于轻量高效的UI输入工具平台，为用户提供简洁、流畅的输入体验。我们严格遵守隐私保护规范，绝不窃取、存储或滥用任何用户隐私数据，所有输入内容仅在本地处理，保障用户数据安全与隐私权益。',
+        privacyStatement: '绝不窃取、存储或滥用任何用户隐私数据',
+        termsLink: '服务条款',
+        privacyLink: '隐私申明',
+        copyright: '© 2026 常数空间 版权所有',
+        searchResults: '搜索结果',
+        searchingFor: '关于 "{query}" 的搜索结果',
+        loading: '搜索中...',
+        searching: '正在为您搜索 "{query}"',
+        searchError: '搜索出错',
+        searchErrorMessage: '搜索过程中发生错误，请稍后重试',
+        backToHome: '返回首页',
+        privacyModalTitle: '隐私声明',
+        termsModalTitle: '服务条款',
+        agree: '同意',
+        reject: '拒绝',
+        close: '关闭',
+        welcome: '常数空间',
+        termsOfService: '服务条款',
+        privacyPolicy: '隐私申明',
+        privacyModalContent: `
+          <p class="mb-4 text-accent font-medium text-lg">重要提示：使用本平台前，请您仔细阅读以下隐私声明，点击「同意」即表示您接受本声明全部内容。</p>
+          <p class="mb-4"><strong class="text-white">核心原则：</strong>常数空间始终将用户隐私放在首位，<span class="font-medium">绝不窃取、收集、存储、使用或转让任何用户隐私数据</span>，所有用户在本平台的操作行为及输入内容均仅在本地设备处理，不会上传至任何服务器，您的所有数据均由您自行掌控。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">1. 数据收集政策</h4>
+          <p class="mb-4">本平台不会主动收集您的任何个人身份信息（姓名、手机号、邮箱、身份证号、住址等）、设备信息（设备型号、系统版本、IP地址等）、行为信息（浏览记录、操作记录、输入内容等）及其他任何可识别个人身份的隐私数据。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">2. 数据使用规则</h4>
+          <p class="mb-4">因本平台不收集任何用户数据，故不存在数据使用、分析、共享、转让、披露等行为。任何第三方均无法通过本平台获取您的任何相关信息，我们也不会向任何机构、企业或个人提供用户数据。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">3. 本地数据处理</h4>
+          <p class="mb-4">您在本平台的所有输入内容、操作设置均仅存储在您的本地设备中，本平台不会对该类数据进行任何形式的上传或同步。您可随时删除本地存储的相关数据，操作权完全归属于您。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">4. 安全保障措施</h4>
+          <p class="mb-4">我们采用多层安全防护技术，保障本平台的运行安全，防止任何未授权的访问、篡改、攻击等行为，确保本平台不会成为窃取用户数据的渠道。同时，我们会持续更新安全策略，及时修复潜在安全漏洞。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">5. 隐私声明的遵守</h4>
+          <p class="mb-4">我们严格遵守《中华人民共和国个人信息保护法》《网络安全法》等相关法律法规，恪守隐私保护承诺，若因法律法规更新需要调整本声明，我们将及时在平台发布更新版本，并保留原有核心隐私保护原则。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">6. 用户权利</h4>
+          <p>您有权随时查看本隐私声明的最新版本，有权拒绝接受本声明（拒绝后将无法使用本平台服务），有权随时停止使用本平台并删除本地相关数据。若您发现本平台存在违反本隐私声明的行为，可随时向我们反馈。</p>
+        `,
+        termsModalContent: `
+          <p class="mb-4 text-accent font-medium text-lg">重要提示：使用本平台前，请您仔细阅读以下服务条款，点击「同意」即表示您接受本条款全部内容。</p>
+          <p class="mb-4">欢迎使用常数空间（以下简称"本平台"）提供的服务，本服务由常数空间运营团队（以下简称"我们"）提供。使用本平台服务，即表示您同意接受本服务条款的全部内容，若您不同意，请勿使用本服务。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">1. 服务使用权限</h4>
+          <p class="mb-4">我们授予您非独占、不可转让的有限权限，以按照本条款使用本平台服务。您承诺仅将本服务用于合法目的，不得利用本服务从事任何违法、违规或损害他人合法权益的行为。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">2. 用户行为规范</h4>
+          <p class="mb-4">您在使用本服务时，不得进行任何干扰、破坏本平台正常运行的行为，包括但不限于恶意攻击、植入病毒、滥用系统资源等；不得传播违法、色情、暴力、诽谤等不良信息。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">3. 服务变更与终止</h4>
+          <p class="mb-4">我们有权根据业务发展需要，随时调整、暂停或终止本服务的全部或部分功能，且无需提前通知。若因服务终止给您造成损失，我们不承担任何赔偿责任（法定情形除外）。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">4. 免责声明</h4>
+          <p class="mb-4">本平台服务按"现状"提供，我们不保证服务的不间断、无错误、无漏洞。对于因使用或无法使用本服务而产生的任何直接、间接、偶然的损失，我们不承担赔偿责任，除非该损失是因我们的故意或重大过失造成。</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">5. 条款变更</h4>
+          <p>我们有权随时修改本服务条款，修改后的条款将在本平台发布后立即生效。若您继续使用本服务，即表示您接受修改后的条款；若您不同意，应立即停止使用本服务。</p>
+        `
+      },
+      en: {
+        subtitle: 'Efficient UI Input Platform, Secure and No Privacy Theft',
+        searchPlaceholder: 'Please enter content... | UI Input/Search',
+        searchButton: 'Search',
+        productIntroTitle: 'Constant Space - Product Introduction',
+        productIntro: 'Constant Space is a lightweight and efficient UI input tool platform, providing users with a simple and smooth input experience. We strictly adhere to privacy protection standards and never steal, store, or misuse any user privacy data. All input content is processed locally, ensuring user data security and privacy rights.',
+        privacyStatement: 'Never steal, store, or misuse any user privacy data',
+        termsLink: 'Terms of Service',
+        privacyLink: 'Privacy Policy',
+        copyright: '© 2026 Constant Space All Rights Reserved',
+        searchResults: 'Search Results',
+        searchingFor: 'Search results for "{query}"',
+        loading: 'Searching...',
+        searching: 'Searching for "{query}"',
+        searchError: 'Search Error',
+        searchErrorMessage: 'An error occurred during the search, please try again later',
+        backToHome: 'Back to Home',
+        privacyModalTitle: 'Privacy Statement',
+        termsModalTitle: 'Terms of Service',
+        agree: 'Agree',
+        reject: 'Reject',
+        close: 'Close',
+        welcome: 'Constant Space',
+        termsOfService: 'Terms of Service',
+        privacyPolicy: 'Privacy Policy',
+        privacyModalContent: `
+          <p class="mb-4 text-accent font-medium text-lg">Important Notice: Before using this platform, please carefully read the following privacy statement. Clicking "Agree" indicates that you accept all contents of this statement.</p>
+          <p class="mb-4"><strong class="text-white">Core Principle:</strong> Constant Space always prioritizes user privacy and <span class="font-medium">never steals, collects, stores, uses, or transfers any user privacy data</span>. All user operations and input content on this platform are processed only on local devices and will not be uploaded to any server. All your data is under your own control.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">1. Data Collection Policy</h4>
+          <p class="mb-4">This platform does not actively collect any of your personal identification information (name, phone number, email, ID card number, address, etc.), device information (device model, system version, IP address, etc.), behavioral information (browsing history, operation records, input content, etc.), or any other privacy data that can identify personal identity.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">2. Data Usage Rules</h4>
+          <p class="mb-4">Since this platform does not collect any user data, there is no data usage, analysis, sharing, transfer, disclosure, or other behaviors. No third party can obtain any of your relevant information through this platform, and we will not provide user data to any institution, enterprise, or individual.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">3. Local Data Processing</h4>
+          <p class="mb-4">All your input content and operation settings on this platform are only stored in your local device. This platform will not upload or synchronize such data in any form. You can delete the relevant locally stored data at any time, and the operation right is completely under your control.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">4. Security Protection Measures</h4>
+          <p class="mb-4">We adopt multi-layer security protection technologies to ensure the operational security of this platform, prevent any unauthorized access, tampering, attacks, or other behaviors, and ensure that this platform does not become a channel for stealing user data. At the same time, we will continuously update platform security strategies and promptly fix potential security vulnerabilities.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">5. Compliance with Privacy Statement</h4>
+          <p class="mb-4">We strictly comply with relevant laws and regulations such as the Personal Information Protection Law of the People's Republic of China and the Cybersecurity Law, and adhere to privacy protection commitments. If this statement needs to be adjusted due to updates in laws and regulations, we will promptly release an updated version on the platform and retain the original core privacy protection principles.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">6. User Rights</h4>
+          <p>You have the right to view the latest version of this privacy statement at any time, the right to refuse to accept this statement (you will not be able to use this platform's services after refusal), and the right to stop using this platform and delete local relevant data at any time. If you find that this platform has violated this privacy statement, you can provide feedback to us at any time.</p>
+        `,
+        termsModalContent: `
+          <p class="mb-4 text-accent font-medium text-lg">Important Notice: Before using this platform, please carefully read the following terms of service. Clicking "Agree" indicates that you accept all contents of these terms.</p>
+          <p class="mb-4">Welcome to use the services provided by Constant Space (hereinafter referred to as "this platform"). This service is provided by the Constant Space operation team (hereinafter referred to as "we"). Using this platform's services indicates that you agree to accept all contents of these service terms. If you do not agree, please do not use this service.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">1. Service Usage Rights</h4>
+          <p class="mb-4">We grant you a non-exclusive, non-transferable limited right to use this platform's services in accordance with these terms. You promise to use this service only for legitimate purposes and shall not use this service to engage in any illegal, irregular, or behaviors that harm the legitimate rights and interests of others.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">2. User Behavior Norms</h4>
+          <p class="mb-4">When using this service, you shall not engage in any behaviors that interfere with or disrupt the normal operation of this platform, including but not limited to malicious attacks, virus implantation, abuse of system resources, etc.; you shall not disseminate illegal, pornographic, violent, defamatory, or other不良信息.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">3. Service Changes and Termination</h4>
+          <p class="mb-4">We have the right to adjust, suspend, or terminate all or part of the functions of this service at any time according to business development needs without prior notice. If service termination causes losses to you, we shall not bear any compensation liability (except for statutory circumstances).</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">4. Disclaimer</h4>
+          <p class="mb-4">This platform's services are provided "as is", and we do not guarantee that the services are uninterrupted, error-free, or vulnerability-free. We shall not bear compensation liability for any direct, indirect, or incidental losses arising from the use or inability to use this service, unless such losses are caused by our intentional or gross negligence.</p>
+          <h4 class="text-white font-semibold mt-6 mb-3">5. Terms Changes</h4>
+          <p>We have the right to modify these service terms at any time. The modified terms will take effect immediately after being published on this platform. If you continue to use this service, it indicates that you accept the modified terms; if you do not agree, you should immediately stop using this service.</p>
+        `
+      }
+    };
+
+    // 应用语言
+    function applyLanguage(lang) {
+      // 更新当前语言
+      currentLanguage = lang;
+      currentLanguageElement.textContent = lang === 'zh' ? '中文' : 'English';
+      // 更新移动端语言显示
+      if (mobileCurrentLanguage) {
+        mobileCurrentLanguage.textContent = lang === 'zh' ? '中文' : 'English';
+      }
+      localStorage.setItem('appLanguage', lang);
+      
+      // 更新页面文本
+      document.querySelectorAll('[data-lang]').forEach(element => {
+        const key = element.getAttribute('data-lang');
+        if (translations[lang][key]) {
+          element.textContent = translations[lang][key];
+        }
+      });
+      
+      // 更新占位符
+      document.querySelectorAll('[data-lang-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-lang-placeholder');
+        if (translations[lang][key]) {
+          element.placeholder = translations[lang][key];
+        }
+      });
+      
+      // 更新弹窗内容
+      const privacyModalContent = document.getElementById('privacyModalContent');
+      const termsModalContent = document.getElementById('termsModalContent');
+      if (privacyModalContent) {
+        privacyModalContent.innerHTML = translations[lang].privacyModalContent;
+      }
+      if (termsModalContent) {
+        termsModalContent.innerHTML = translations[lang].termsModalContent;
+      }
+    }
+
+    // 切换语言
+    function changeLanguage(lang) {
+      applyLanguage(lang);
+      languageDropdown.classList.add('hidden');
+      // 语言切换后，清除同意状态并重新显示隐私声明弹窗
+      localStorage.removeItem('privacyAgreed');
+      // 显示隐私声明弹窗
+      privacyModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // 移动端菜单交互
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileLanguageBtn = document.getElementById('mobileLanguageBtn');
+    const mobileLanguageDropdown = document.getElementById('mobileLanguageDropdown');
+    const mobileCurrentLanguage = document.getElementById('mobileCurrentLanguage');
+
+    // 切换移动端菜单
+    function toggleMobileMenu() {
+      if (mobileMenu) {
+        mobileMenu.classList.toggle('hidden');
+      }
+    }
+
+    // 移动端菜单按钮点击事件
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    }
+
+    // 移动端语言选择下拉菜单
+    if (mobileLanguageBtn && mobileLanguageDropdown) {
+      mobileLanguageBtn.addEventListener('click', function() {
+        mobileLanguageDropdown.classList.toggle('hidden');
+      });
+    }
+
+    // 语言选择下拉菜单
+    if (languageBtn && languageDropdown) {
+      languageBtn.addEventListener('click', function() {
+        languageDropdown.classList.toggle('hidden');
+      });
+      
+      // 点击其他地方关闭下拉菜单
+      document.addEventListener('click', function(event) {
+        if (!languageBtn.contains(event.target) && !languageDropdown.contains(event.target) &&
+            !mobileLanguageBtn.contains(event.target) && !mobileLanguageDropdown.contains(event.target)) {
+          languageDropdown.classList.add('hidden');
+          if (mobileLanguageDropdown) {
+            mobileLanguageDropdown.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    // 初始化语言
+    applyLanguage(currentLanguage);
+
+    // 平滑滚动 - 点击锚点链接时
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href');
+        // 检查targetId是否为有效的选择器（不是空的#）
+        if (targetId === '#') {
+          return; // 跳过空的#链接，允许直接跳转
+        }
+        e.preventDefault();
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // 页面加载时，若用户已同意隐私声明，不再弹出弹窗
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('privacyAgreed') === 'true') {
+        privacyModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
+    });
+  </script>
+</body>
+</html>
